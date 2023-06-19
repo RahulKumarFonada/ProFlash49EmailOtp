@@ -1,0 +1,5 @@
+{"properties": [{
+  "name": "baseUrl.send.Otp.onMobile",
+  "type": "java.lang.String",
+  "description": "A description for 'baseUrl.send.Otp.onMobile'"
+}]}
