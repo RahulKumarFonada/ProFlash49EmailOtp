@@ -22,6 +22,7 @@ import com.flash49.emailOtp.entity.SendEmailOtpEntity;
 import com.flash49.emailOtp.entity.SendEmailOtpLogs;
 import com.flash49.emailOtp.repository.LogsRepository;
 import com.flash49.emailOtp.repository.SendEmailOtpRepository;
+import com.flash49.emailOtp.service.CleverTapDlrService;
 import com.flash49.emailOtp.service.SendEmail;
 
 @RestController
@@ -38,62 +39,88 @@ public class SendEmailOtpController {
 	@Autowired
 	private LogsRepository logsRepository;
 
+	@Autowired
+	private CleverTapDlrService cleverTapDlrService;
+
+	@SuppressWarnings("null")
 	@RequestMapping(value = "/sendEmailOtp", method = RequestMethod.GET)
 	public ResponseEntity<HashMap<String, Object>> sendEmailOtp(@RequestParam(required = true) String username,
 			@RequestParam(required = true) String password, @RequestParam(required = true) String from,
 			@RequestParam(required = false) String dltContentId, @RequestParam(required = false) String corelationid,
 			@RequestParam(required = true) String to, @RequestParam(required = true) String text,
 			@RequestParam(required = true) String unicode, @RequestParam(required = false) String param,
-			@RequestParam(required = false) String entityid) throws Exception {
+			@RequestParam(required = false) String entityid, @RequestParam(required = false) String deliverystatus)
+			throws Exception {
 		SendEmailOtpEntity sendEmailOtp = null;
-		Logger.info(
-				" Inside SendEmailOtpController.sendEmailOtp() Request :: OTPMSG:: " + text + " And Msisdn :: " + to);
 		HashMap<String, Object> result = new HashMap<>();
 		String otpResponse = "";
 
 		try {
-			if (Objects.isNull(to) || to.equals("") || to.isEmpty()) {
-				throw new Exception(" {to} Param Cannot Be Empty Or Null OR Blank.");
+			if (Objects.nonNull(corelationid) && !corelationid.isEmpty() && !corelationid.equalsIgnoreCase("")) {
+				Logger.info(
+						" Inside SendEmailOtpController.sendEmailOtp() Request with corelation Id::" + corelationid);
 
+				cleverTapDlrService.sendCleverTapDlr(username, password, from, dltContentId, corelationid, to, text,
+						unicode, param, entityid, deliverystatus);
+				result.put("STATUS", 200);
+				result.put("MESSAGE", "Success");
+				return new ResponseEntity<>(result, HttpStatus.OK);
 			}
-			if (Objects.isNull(text) || text.equals("") || text.isEmpty()) {
-				throw new Exception(" {text} Param Cannot Be Empty Or Null OR Blank.");
+			if (Objects.isNull(param) && Objects.isNull(corelationid)) {
+				Logger.info(" Inside SendEmailOtpController.sendEmailOtp() for sending OTP ::");
 
-			}
-			if (to.length() >= 10 && to.length() <= 12) {
-				sendEmailOtp = sendEmailOtpRepository.findByMsisdnContains(trimZeros(to));
-				if (Objects.nonNull(sendEmailOtp)) {
-					return sendEmaiAndOTP(sendEmailOtp, text, to);
+				if (Objects.isNull(to) || to.equals("") || to.isEmpty()) {
+					throw new Exception(" {to} Param Cannot Be Empty Or Null OR Blank.");
+
+				}
+				if (Objects.isNull(text) || text.equals("") || text.isEmpty()) {
+					throw new Exception(" {text} Param Cannot Be Empty Or Null OR Blank.");
+
+				}
+				if (to.length() >= 10 && to.length() <= 12) {
+					sendEmailOtp = sendEmailOtpRepository.findByMsisdnContains(trimZeros(to));
+					if (logsRepository.findTopByOrderByIdDescRequestContainingAndSentToContaining(text,
+							sendEmailOtp.getOtpMsisdn()) == null) {
+
+						if (Objects.nonNull(sendEmailOtp)) {
+							return sendEmaiAndOTP(sendEmailOtp, text, to);
+						}
+					} else {
+						saveLogs("Record Already Exits Msg:: " + text + " And Msisdn ::" + to, "Mobile No Not Valid",
+								to, to);
+						result.put("STATUS", 200);
+						result.put("MESSAGE", "Same OTP Not Allowed");
+						Logger.info("Record Already Exits Msg:: " + text + " And Msisdn ::" + to, "Mobile No Not Valid",
+								to, to);
+						return new ResponseEntity<>(result, HttpStatus.OK);
+
+					} /*
+						 * else { if (Objects.isNull(sendEmailOtp)) {
+						 * Logger.info("Record Doesn't Exist As Given MSISDN For OTP AND E-Mail :: " +
+						 * to + " But Send Sms Directly"); otpResponse = sendEmail.sendOTPByMno(to,
+						 * text); saveLogs("Record Doesn't Exist As Given MSISDN For OTP AND E-Mail :: "
+						 * + to + " But Send Sms Directly" + to, otpResponse, to, to);
+						 * result.put("STATUS", 200); result.put("MESSAGE", otpResponse); return new
+						 * ResponseEntity<>(result, HttpStatus.OK); } }
+						 */
 				} else {
-					saveLogs("Record Doesn't Exist Against ::" + to, "Record Not Found.", to, to);
+					saveLogs("Msg:: " + text + " And Msisdn ::" + to, "Mobile No Not Valid", to, to);
 					result.put("STATUS", 200);
-					result.put("MESSAGE", "Record Not Found.");
+					result.put("MESSAGE", "Mobile No Not Valid");
 					return new ResponseEntity<>(result, HttpStatus.OK);
 
-				} /*
-					 * else { if (Objects.isNull(sendEmailOtp)) {
-					 * Logger.info("Record Doesn't Exist As Given MSISDN For OTP AND E-Mail :: " +
-					 * to + " But Send Sms Directly"); otpResponse = sendEmail.sendOTPByMno(to,
-					 * text); saveLogs("Record Doesn't Exist As Given MSISDN For OTP AND E-Mail :: "
-					 * + to + " But Send Sms Directly" + to, otpResponse, to, to);
-					 * result.put("STATUS", 200); result.put("MESSAGE", otpResponse); return new
-					 * ResponseEntity<>(result, HttpStatus.OK); } }
-					 */
-			} else {
-				saveLogs("Msg:: " + text + " And Msisdn ::" + to, "Mobile No Not Valid", to, to);
-				result.put("STATUS", 200);
-				result.put("MESSAGE", "Mobile No Not Valid");
-				return new ResponseEntity<>(result, HttpStatus.OK);
-
+				}
 			}
+		} catch (
 
-		} catch (Exception e) {
+		Exception e) {
 			saveLogs("Otp Msg:: " + text + " And Msisdn ::" + to, e.getMessage(), to, to);
 			e.printStackTrace();
 			result.put("STATUS", 200);
 			result.put("MESSAGE", e.getMessage());
 			return new ResponseEntity<>(result, HttpStatus.OK);
 		}
+		return null;
 	}
 
 	/**

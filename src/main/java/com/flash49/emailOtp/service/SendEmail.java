@@ -51,8 +51,7 @@ public class SendEmail {
 	private String otpFrom;
 	@Value("${send.Otp.dltContentId}")
 	private String otpDltContentId;
-	@Value("${send.Otp.entityid}")
-	private String otpEntityId;
+	
 
 	@Autowired
 	public JavaMailSender emailSender;
@@ -90,9 +89,10 @@ public class SendEmail {
 			}
 			message.setRecipients(Message.RecipientType.TO, toAddress);
 
-			helper.setFrom("otp@shivtel.com");
+			helper.setFrom(userMail);
 
-			helper.setText(otpMsg, true);
+			helper.setText("Hi User," + "\n\n"+ "Please Collect OTP." + "\n\n" + otpMsg + "\n\n"
+					+ "Thanks & Regards.");
 			helper.setSubject("OTP From pro.Flash49.com Panel");
 
 			emailSender.send(message);
@@ -125,7 +125,7 @@ public class SendEmail {
 			String urlTemplate = UriComponentsBuilder.fromHttpUrl(otpSendApi).queryParam("username", otpUsername)
 					.queryParam("password", otpPassword).queryParam("unicode", otpUnicode).queryParam("from", otpFrom)
 					.queryParam("to", mobileNo).queryParam("dltContentId", otpDltContentId)
-					.queryParam("text", URLEncoder.encode(optMsg, "UTF-8")).queryParam("entityid", otpEntityId).encode()
+					.queryParam("text", URLEncoder.encode(optMsg, "UTF-8")).encode()
 					.toUriString();
 
 			Logger.info("Sending  Request For SMS:: " + urlTemplate);
@@ -140,5 +140,4 @@ public class SendEmail {
 
 	}
 
-	
 }
