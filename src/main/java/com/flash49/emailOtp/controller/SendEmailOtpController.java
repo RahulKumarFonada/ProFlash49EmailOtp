@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -43,7 +43,7 @@ public class SendEmailOtpController {
 	private CleverTapDlrService cleverTapDlrService;
 
 	@SuppressWarnings("null")
-	@RequestMapping(value = "/sendEmailOtp", method = RequestMethod.GET)
+	@GetMapping("/sendEmailOtp")
 	public ResponseEntity<HashMap<String, Object>> sendEmailOtp(@RequestParam(required = true) String username,
 			@RequestParam(required = true) String password, @RequestParam(required = true) String from,
 			@RequestParam(required = false) String dltContentId, @RequestParam(required = false) String corelationid,

@@ -41,5 +41,6 @@ public class CleverTapEntity {
 	private Integer sentDlr;
 	@Column(name = "deliverystatus")
 	private String deliverystatus;
-
+	@Column(name = "createdDate")
+	private String createdDate;
 }

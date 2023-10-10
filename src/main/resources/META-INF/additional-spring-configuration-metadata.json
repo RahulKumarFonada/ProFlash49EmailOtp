@@ -1,5 +1,17 @@
-{"properties": [{
-  "name": "baseUrl.send.Otp.onMobile",
-  "type": "java.lang.String",
-  "description": "A description for 'baseUrl.send.Otp.onMobile'"
-}]}
+{"properties": [
+  {
+    "name": "baseUrl.send.Otp.onMobile",
+    "type": "java.lang.String",
+    "description": "A description for 'baseUrl.send.Otp.onMobile'"
+  },
+  {
+    "name": "cleverTap.callback.url",
+    "type": "java.lang.String",
+    "description": "A description for 'cleverTap.callback.url'"
+  },
+  {
+    "name": "cleverTap.callback.url",
+    "type": "java.lang.String",
+    "description": "A description for 'cleverTap.callback.url'"
+  }
+]}

@@ -1,7 +1,16 @@
 package com.flash49.emailOtp.service;
 
-import javax.swing.CellEditor;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +32,8 @@ public class CleverTapDlrService {
 			String deliverystatus) {
 		Logger.info("***** Going To Saving cleverTab dlr *****");
 		CleverTapEntity cleverTapEntity = new CleverTapEntity();
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
 		try {
 			cleverTapEntity.setCorelationid(corelationid);
 			cleverTapEntity.setSentDlr(0);
@@ -36,6 +47,7 @@ public class CleverTapDlrService {
 			cleverTapEntity.setTo(to);
 			cleverTapEntity.setUnicode(unicode);
 			cleverTapEntity.setUsername(username);
+			cleverTapEntity.setCreatedDate(dateFormat.format(new Date()));
 			cleverTapRepository.save(cleverTapEntity);
 
 			Logger.info("***** After  Saving cleverTab dlr *****" + cleverTapEntity.toString());
@@ -45,6 +57,7 @@ public class CleverTapDlrService {
 			e.printStackTrace();
 		}
 	}
+
 	
-	
+
 }
